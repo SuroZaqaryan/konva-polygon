@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Line, Circle, Group } from "react-konva";
 
 const dragBoundFunc = (stageWidth, stageHeight, vertexRadius, pos) => {
@@ -21,41 +21,21 @@ const minMax = (points) => {
 const PolygonAnnotation = (props) => {
   const {
     points,
-    setPoints,
-    flattenedPoints,
     isFinished,
     handlePointDragMove,
+    scaledPolygons,
     handleGroupDragEnd,
     handleMouseOverStartPoint,
     handleMouseOutStartPoint,
     windowSize,
     imageSize,
     scale,
-    offset,
   } = props;
   const vertexRadius = 6;
 
   const [stage, setStage] = useState();
   const [minMaxX, setMinMaxX] = useState([0, 0]); //min and max in x axis
   const [minMaxY, setMinMaxY] = useState([0, 0]); //min and max in y axis
-
-  const [scaledPolygons, setScaledPolygons] = useState([]);
-
-  useEffect(() => {
-    // Пересчитываем координаты полигонов при изменении масштаба или смещения
-    const newScaledPolygons = points.map((point) => ({
-      x:
-        point[0] * scale +
-        (windowSize.width - imageSize.width * scale) / 2 +
-        offset.x,
-      y:
-        point[1] * scale +
-        (windowSize.height - imageSize.height * scale) / 2 +
-        offset.y,
-    }));
-
-    setScaledPolygons(newScaledPolygons);
-  }, [scale, offset, points, windowSize, imageSize]);
 
   const handleGroupMouseOver = (e) => {
     if (!isFinished) return;
@@ -76,8 +56,9 @@ const PolygonAnnotation = (props) => {
 
   const groupDragBound = (pos) => {
     let { x, y } = pos;
-    const sw = stage.width();
-    const sh = stage.height();
+    const sw = imageSize.width;
+    const sh = imageSize.height;
+
     if (minMaxY[0] + y < 0) y = -1 * minMaxY[0];
     if (minMaxX[0] + x < 0) x = -1 * minMaxX[0];
     if (minMaxY[1] + y > sh) y = sh - minMaxY[1];
@@ -96,15 +77,17 @@ const PolygonAnnotation = (props) => {
       onMouseOut={handleGroupMouseOut}
     >
       <Line
-        points={flattenedPoints}
+        points={scaledPolygons.flat()} // Используйте `scaledPolygons` для отображения линии
         stroke="#00F1FF"
         strokeWidth={3}
         closed={isFinished}
-        fill="rgb(140,30,255,0.5)"
+        fill="green"
       />
+
       {points.map((point, index) => {
-        const x = point[0] - vertexRadius / 2;
-        const y = point[1] - vertexRadius / 2;
+        const x = point[0] * scale + (windowSize.width - imageSize.width * scale) / 2;
+        const y = point[1] * scale + (windowSize.height - imageSize.height * scale) / 2;
+
         const startPointAttr =
           index === 0
             ? {
