@@ -47,7 +47,7 @@ const PolygonAnnotation = (props) => {
     e.target.getStage().container().style.cursor = "default";
   };
 
-  const handleGroupDragStart = (e) => {
+  const handleGroupDragStart = () => {
     let arrX = points.map((p) => p[0]);
     let arrY = points.map((p) => p[1]);
     setMinMaxX(minMax(arrX));
@@ -70,18 +70,18 @@ const PolygonAnnotation = (props) => {
     <Group
       name="polygon"
       draggable={isFinished}
-      onDragStart={handleGroupDragStart}
       onDragEnd={handleGroupDragEnd}
       dragBoundFunc={groupDragBound}
-      onMouseOver={handleGroupMouseOver}
       onMouseOut={handleGroupMouseOut}
+      onMouseOver={handleGroupMouseOver}
+      onDragStart={handleGroupDragStart}
     >
       <Line
-        points={scaledPolygons.flat()} // Используйте `scaledPolygons` для отображения линии
-        stroke="#00F1FF"
-        strokeWidth={3}
+        points={scaledPolygons.flat()}
+        stroke="#000"
+        strokeWidth={1}
         closed={isFinished}
-        fill="green"
+        fill="#82828273"
       />
 
       {points.map((point, index) => {
@@ -91,26 +91,24 @@ const PolygonAnnotation = (props) => {
         const startPointAttr =
           index === 0
             ? {
-              hitStrokeWidth: 12,
+              hitStrokeWidth: 8,
               onMouseOver: handleMouseOverStartPoint,
               onMouseOut: handleMouseOutStartPoint,
             }
             : null;
         return (
           <Circle
-            key={index}
             x={x}
             y={y}
-            radius={vertexRadius}
-            fill="#FF019A"
-            stroke="#00F1FF"
-            strokeWidth={2}
             draggable
-            onDragMove={handlePointDragMove}
-            dragBoundFunc={(pos) =>
-              dragBoundFunc(stage.width(), stage.height(), vertexRadius, pos)
-            }
+            key={index}
+            fill="#dddddd"
+            stroke="#000"
+            strokeWidth={1}
             {...startPointAttr}
+            radius={vertexRadius}
+            onDragMove={handlePointDragMove}
+            dragBoundFunc={(pos) => dragBoundFunc(stage.width(), stage.height(), vertexRadius, pos)}
           />
         );
       })}

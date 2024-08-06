@@ -150,7 +150,7 @@ const AdaptiveImage = () => {
 
   const handleMouseOverStartPoint = (e) => {
     if (isPolyComplete || points.length < 3) return;
-    e.target.scale({ x: 3, y: 3 });
+    e.target.scale({ x: 2, y: 2 });
     setMouseOverPoint(true);
   };
 
