@@ -24,6 +24,21 @@ const AdaptiveImage = () => {
   );
 
   useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'n' || e.key === 'N') {
+        setPolyComplete(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+
+  useEffect(() => {
     if (image) {
       const imgWidth = image.width;
       const imgHeight = image.height;
@@ -117,14 +132,17 @@ const AdaptiveImage = () => {
     const stage = e.target.getStage();
     const mousePos = getMousePos(stage);
 
-    // Преобразуйте точки и текущую позицию мыши в координаты с учетом масштаба и смещения
     const adjustPosition = (x, y) => [
       x * scale + (windowSize.width - imageSize.width * scale) / 2 + offset.x,
       y * scale + (windowSize.height - imageSize.height * scale) / 2 + offset.y
     ];
 
-    const newScaledPolygons = points.flatMap(point => adjustPosition(point[0], point[1]));
-    const tempLine = [...newScaledPolygons, ...adjustPosition(mousePos[0], mousePos[1])];
+    const newPoints = [...points, mousePos];
+    const tempLine = [
+      ...newPoints.flatMap(point => adjustPosition(point[0], point[1])),
+      adjustPosition(mousePos[0], mousePos[1]),
+      adjustPosition(points[0][0], points[0][1])
+    ];
 
     setScaledPolygons(tempLine);
   };
