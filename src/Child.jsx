@@ -56,13 +56,14 @@ const AdaptiveImage = () => {
   }, [image, windowSize]);
 
   useEffect(() => {
+    // Обновляем масштабированные полигоны
     const newScaledPolygons = polygons.map((points) =>
       points.map((point) => [
-        Number(point[0]) * scale +
+        point[0] * scale +
         (windowSize.width - imageSize.width * scale) / 2 +
         offset.x,
 
-        Number(point[1]) * scale +
+        point[1] * scale +
         (windowSize.height - imageSize.height * scale) / 2 +
         offset.y,
       ])
