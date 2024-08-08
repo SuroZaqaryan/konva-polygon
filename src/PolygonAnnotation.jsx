@@ -12,34 +12,26 @@ const dragBoundFunc = (stageWidth, stageHeight, vertexRadius, pos) => {
   return { x, y };
 };
 
-// Функция для вычисления минимального и максимального значений в массиве
-const minMax = (points) => {
-  return points.reduce((acc, val) => {
-    acc[0] = acc[0] === undefined || val < acc[0] ? val : acc[0];
-    acc[1] = acc[1] === undefined || val > acc[1] ? val : acc[1];
-    return acc;
-  }, []);
-};
 
 const PolygonAnnotation = (props) => {
   const {
     points,
     isFinished,
-    handlePointDragMove,
     scaledPolygons,
-    handleGroupDragEnd,
-    handleMouseOverStartPoint,
-    handleMouseOutStartPoint,
+    polygons,
+    setMouseOverPoint,
+    isPolyComplete,
+    setPolygons,
+    offset,
+    currentPoints,
+    setCurrentPoints,
     windowSize,
     imageSize,
     scale,
   } = props;
 
   const vertexRadius = 6;
-
   const [stage, setStage] = useState();
-  const [minMaxX, setMinMaxX] = useState([0, 0]);
-  const [minMaxY, setMinMaxY] = useState([0, 0]);
 
   const handleGroupMouseOver = (e) => {
     if (!isFinished) return;
@@ -51,22 +43,69 @@ const PolygonAnnotation = (props) => {
     e.target.getStage().container().style.cursor = "default";
   };
 
-  const handleGroupDragStart = () => {
-    const arrX = points.map((p) => p[0]);
-    const arrY = points.map((p) => p[1]);
-    setMinMaxX(minMax(arrX));
-    setMinMaxY(minMax(arrY));
+  const handlePointDragMove = (e) => {
+    const index = e.target.index;
+    const pos = [e.target.x(), e.target.y()];
+
+    // Преобразуйте позицию точки с учетом масштаба и смещения
+    const updatedPos = [
+      (pos[0] - (windowSize.width - imageSize.width * scale) / 2 - offset.x) / scale,
+      (pos[1] - (windowSize.height - imageSize.height * scale) / 2 - offset.y) / scale
+    ];
+
+    // Обновите состояние точек с новыми координатами
+    setCurrentPoints([...currentPoints.slice(0, index), updatedPos, ...currentPoints.slice(index + 1)]);
+  };
+
+  const handleGroupDragEnd = (e) => {
+    if (e.target.name() === "polygon") {
+      const xOffset = e.target.x();
+      const yOffset = e.target.y();
+
+      const updatedPolygons = polygons.map((polygon) =>
+        polygon.map((point) => [
+          point[0] + xOffset / scale,
+          point[1] + yOffset / scale,
+        ])
+      );
+
+      setPolygons(updatedPolygons);
+      e.target.position({ x: 0, y: 0 });
+    }
+  };
+
+  const handleMouseOverStartPoint = (e) => {
+    if (isPolyComplete || currentPoints.length < 3) return;
+    e.target.scale({ x: 2, y: 2 });
+    setMouseOverPoint(true);
+  };
+
+  const handleMouseOutStartPoint = (e) => {
+    e.target.scale({ x: 1, y: 1 });
+    setMouseOverPoint(false);
   };
 
   const groupDragBound = (pos) => {
-    let { x, y } = pos;
-    const sw = imageSize.width * scale;
-    const sh = imageSize.height * scale;
+    const imageWidth = imageSize.width * scale;
+    const imageHeight = imageSize.height * scale;
 
-    if (minMaxY[0] + y < 0) y = -minMaxY[0];
-    if (minMaxX[0] + x < 0) x = -minMaxX[0];
-    if (minMaxY[1] + y > sh) y = sh - minMaxY[1];
-    if (minMaxX[1] + x > sw) x = sw - minMaxX[1];
+    // Calculate the current bounding box of the polygon
+    const minX = Math.min(...points.map(p => p[0])) * scale + offset.x;
+    const maxX = Math.max(...points.map(p => p[0])) * scale + offset.x;
+    const minY = Math.min(...points.map(p => p[1])) * scale + offset.y;
+    const maxY = Math.max(...points.map(p => p[1])) * scale + offset.y;
+
+    // Calculate the constraints for dragging
+    let x = pos.x;
+    let y = pos.y;
+
+    // Constrain x within the bounds of the image
+    if (x + minX < 0) x = -minX;
+    if (x + maxX > imageWidth) x = imageWidth - maxX;
+
+    // Constrain y within the bounds of the image
+    if (y + minY < 0) y = -minY;
+    if (y + maxY > imageHeight) y = imageHeight - maxY;
 
     return { x, y };
   };
@@ -78,7 +117,6 @@ const PolygonAnnotation = (props) => {
       onDragEnd={handleGroupDragEnd}
       onMouseOut={handleGroupMouseOut}
       onMouseOver={handleGroupMouseOver}
-      onDragStart={handleGroupDragStart}
       dragBoundFunc={groupDragBound}
     >
       <Line

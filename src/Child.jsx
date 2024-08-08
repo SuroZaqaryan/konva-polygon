@@ -57,7 +57,6 @@ const AdaptiveImage = () => {
   }, [scale, offset, polygons, windowSize, imageSize]);
 
 
-
   useEffect(() => {
     const handleResize = () => {
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
@@ -78,20 +77,6 @@ const AdaptiveImage = () => {
     }
   };
 
-  const handlePointDragMove = (e) => {
-    const index = e.target.index;
-    const pos = [e.target.x(), e.target.y()];
-
-    // Преобразуйте позицию точки с учетом масштаба и смещения
-    const updatedPos = [
-      (pos[0] - (windowSize.width - imageSize.width * scale) / 2 - offset.x) / scale,
-      (pos[1] - (windowSize.height - imageSize.height * scale) / 2 - offset.y) / scale
-    ];
-
-    // Обновите состояние точек с новыми координатами
-    setCurrentPoints([...currentPoints.slice(0, index), updatedPos, ...currentPoints.slice(index + 1)]);
-  };
-
   const getMousePos = (stage) => {
     const position = stage.getPointerPosition();
 
@@ -105,7 +90,7 @@ const AdaptiveImage = () => {
   };
 
   const handleMouseDown = (e) => {
-    if (isPolyComplete || e.target.parent.attrs.draggable) {
+    if (isPolyComplete || e.target.parent?.attrs.draggable) {
       setPolyComplete(false);
       return;
     }
@@ -121,7 +106,6 @@ const AdaptiveImage = () => {
       setCurrentPoints([...currentPoints, [scaledX, scaledY]]);
     }
   };
-
 
   const handleMouseMove = (e) => {
     if (isPolyComplete || currentPoints.length === 0) return;
@@ -150,33 +134,6 @@ const AdaptiveImage = () => {
     ]);
   };
 
-  const handleMouseOverStartPoint = (e) => {
-    if (isPolyComplete || currentPoints.length < 3) return;
-    e.target.scale({ x: 2, y: 2 });
-    setMouseOverPoint(true);
-  };
-
-  const handleMouseOutStartPoint = (e) => {
-    e.target.scale({ x: 1, y: 1 });
-    setMouseOverPoint(false);
-  };
-
-  const handleGroupDragEnd = (e) => {
-    if (e.target.name() === "polygon") {
-      const xOffset = e.target.x();
-      const yOffset = e.target.y();
-
-      const updatedPolygons = polygons.map((polygon) =>
-        polygon.map((point) => [
-          point[0] + xOffset / scale,
-          point[1] + yOffset / scale,
-        ])
-      );
-
-      setPolygons(updatedPolygons);
-      e.target.position({ x: 0, y: 0 });
-    }
-  };
 
   return (
     <div>
@@ -211,10 +168,13 @@ const AdaptiveImage = () => {
                 key={index}
                 points={polygon}
                 scaledPolygons={scaledPolygons[index]}
-                handlePointDragMove={handlePointDragMove}
-                handleGroupDragEnd={handleGroupDragEnd}
-                handleMouseOverStartPoint={handleMouseOverStartPoint}
-                handleMouseOutStartPoint={handleMouseOutStartPoint}
+                setCurrentPoints={setCurrentPoints}
+                setMouseOverPoint={setMouseOverPoint}
+                isPolyComplete={isPolyComplete}
+                offset={offset}
+                currentPoints={currentPoints}
+                polygons={polygons}
+                setPolygons={setPolygons}
                 isFinished={true}
                 windowSize={windowSize}
                 imageSize={imageSize}
@@ -228,10 +188,13 @@ const AdaptiveImage = () => {
             <PolygonAnnotation
               points={currentPoints}
               scaledPolygons={scaledPolygons[scaledPolygons.length - 1]}
-              handlePointDragMove={handlePointDragMove}
-              handleGroupDragEnd={handleGroupDragEnd}
-              handleMouseOverStartPoint={handleMouseOverStartPoint}
-              handleMouseOutStartPoint={handleMouseOutStartPoint}
+              setCurrentPoints={setCurrentPoints}
+              setMouseOverPoint={setMouseOverPoint}
+              isPolyComplete={isPolyComplete}
+              offset={offset}
+              currentPoints={currentPoints}
+              polygons={polygons}
+              setPolygons={setPolygons}
               isFinished={false}
               windowSize={windowSize}
               imageSize={imageSize}
