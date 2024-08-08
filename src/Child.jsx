@@ -26,22 +26,6 @@ const AdaptiveImage = () => {
   );
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'n' || e.key === 'N') {
-        if (currentPoints.length >= 3) { // Проверка количество точек
-          completePolygon();
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [currentPoints, polygons]);
-
-  useEffect(() => {
     if (image) {
       const imgWidth = image.width;
       const imgHeight = image.height;
@@ -66,21 +50,17 @@ const AdaptiveImage = () => {
         point[1] * scale +
         (windowSize.height - imageSize.height * scale) / 2 +
         offset.y,
-      ])
+      ]).flat()
     );
 
-    const flattenNewScaledPolygons = flattenArray(newScaledPolygons);
-
-    setScaledPolygons(flattenNewScaledPolygons);
+    setScaledPolygons(newScaledPolygons);
   }, [scale, offset, polygons, windowSize, imageSize]);
+
 
 
   useEffect(() => {
     const handleResize = () => {
-      setWindowSize({
-        width: window.innerWidth,
-        height: window.innerHeight,
-      });
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     };
 
     window.addEventListener("resize", handleResize);
@@ -125,7 +105,11 @@ const AdaptiveImage = () => {
   };
 
   const handleMouseDown = (e) => {
-    if (isPolyComplete) return;
+    if (isPolyComplete || e.target.parent.attrs.draggable) {
+      setPolyComplete(false);
+      return;
+    }
+
     const position = stageRef.current.getPointerPosition();
 
     const scaledX = (position.x - offset.x - (windowSize.width - imageSize.width * scale) / 2) / scale;
@@ -133,11 +117,11 @@ const AdaptiveImage = () => {
 
     if (isMouseOverPoint && currentPoints.length >= 3) {
       completePolygon();
-      //setPolyComplete(true);
     } else {
       setCurrentPoints([...currentPoints, [scaledX, scaledY]]);
     }
   };
+
 
   const handleMouseMove = (e) => {
     if (isPolyComplete || currentPoints.length === 0) return;
@@ -221,26 +205,29 @@ const AdaptiveImage = () => {
             />
           )}
 
-          {polygons.map((polygon, index) => (
-            <PolygonAnnotation
-              key={index}
-              points={polygon}
-              scaledPolygons={scaledPolygons[index]}
-              handlePointDragMove={handlePointDragMove}
-              handleGroupDragEnd={handleGroupDragEnd}
-              handleMouseOverStartPoint={handleMouseOverStartPoint}
-              handleMouseOutStartPoint={handleMouseOutStartPoint}
-              isFinished={true}
-              windowSize={windowSize}
-              imageSize={imageSize}
-              scale={scale}
-            />
-          ))}
+          {polygons.map((polygon, index) => {
+            return (
+              <PolygonAnnotation
+                key={index}
+                points={polygon}
+                scaledPolygons={scaledPolygons[index]}
+                handlePointDragMove={handlePointDragMove}
+                handleGroupDragEnd={handleGroupDragEnd}
+                handleMouseOverStartPoint={handleMouseOverStartPoint}
+                handleMouseOutStartPoint={handleMouseOutStartPoint}
+                isFinished={true}
+                windowSize={windowSize}
+                imageSize={imageSize}
+                scale={scale}
+              />
+            );
+          })}
+
 
           {currentPoints.length > 0 && (
             <PolygonAnnotation
               points={currentPoints}
-              scaledPolygons={scaledPolygons[scaledPolygons.length - 1]} // Последний полигон
+              scaledPolygons={scaledPolygons[scaledPolygons.length - 1]}
               handlePointDragMove={handlePointDragMove}
               handleGroupDragEnd={handleGroupDragEnd}
               handleMouseOverStartPoint={handleMouseOverStartPoint}

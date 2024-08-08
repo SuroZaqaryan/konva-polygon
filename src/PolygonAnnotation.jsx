@@ -71,13 +71,6 @@ const PolygonAnnotation = (props) => {
     return { x, y };
   };
 
-  // Проверьте, является ли scaledPolygons массивом
-  const validScaledPolygons = Array.isArray(scaledPolygons)
-    ? scaledPolygons
-    : []; // Пустой массив, если это не массив
-  console.log('validScaledPolygons', validScaledPolygons);
-
-
   return (
     <Group
       name="polygon"
@@ -89,7 +82,7 @@ const PolygonAnnotation = (props) => {
       dragBoundFunc={groupDragBound}
     >
       <Line
-        points={validScaledPolygons}
+        points={scaledPolygons}
         stroke="#000"
         strokeWidth={2}
         closed
