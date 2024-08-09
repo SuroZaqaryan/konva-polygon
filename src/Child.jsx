@@ -15,7 +15,22 @@ const AdaptiveImage = () => {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [scaledPolygons, setScaledPolygons] = useState([]);
 
-  const [polygons, setPolygons] = useState([]); // Состояние для нескольких полигонов
+  const [polygons, setPolygons] = useState([
+    [
+      [
+        594,
+        378.75
+      ],
+      [
+        613.5,
+        287.25
+      ],
+      [
+        729,
+        387.75
+      ]
+    ]
+  ]); // Состояние для нескольких полигонов
   const [currentPoints, setCurrentPoints] = useState([]); // Точки текущего полигона
   const [isMouseOverPoint, setMouseOverPoint] = useState(false);
   const [isPolyComplete, setPolyComplete] = useState(false);

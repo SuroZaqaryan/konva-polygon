@@ -59,18 +59,20 @@ const PolygonAnnotation = (props) => {
   };
 
   const handleGroupDragEnd = (e) => {
-    const xOffset = e.target.x();
-    const yOffset = e.target.y();
+    if (e.target.name() === "polygon") {
+      const xOffset = e.target.x();
+      const yOffset = e.target.y();
 
-    const updatedPolygons = polygons.map((polygon) =>
-      polygon.map((point) => [
-        point[0] + xOffset / scale,
-        point[1] + yOffset / scale,
-      ])
-    );
+      const updatedPolygons = polygons.map((polygon) =>
+        polygon.map((point) => [
+          point[0] + xOffset / scale,
+          point[1] + yOffset / scale,
+        ])
+      );
 
-    setPolygons(updatedPolygons);
-    e.target.position({ x: 0, y: 0 });
+      setPolygons(updatedPolygons);
+      e.target.position({ x: 0, y: 0 });
+    }
   };
 
   const groupDragBound = (pos) => {
