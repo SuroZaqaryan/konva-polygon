@@ -33,18 +33,8 @@ const PolygonAnnotation = (props) => {
   const vertexRadius = 6;
   const [stage, setStage] = useState();
 
-  const handleGroupMouseOver = (e) => {
-    if (!isFinished) return;
-    e.target.getStage().container().style.cursor = "move";
-    setStage(e.target.getStage());
-  };
-
-  const handleGroupMouseOut = (e) => {
-    e.target.getStage().container().style.cursor = "default";
-  };
-
   const handlePointDragMove = (e) => {
-    const index = e.target.index;
+    const index = e.target.index - 1;
     const pos = [e.target.x(), e.target.y()];
 
     // Преобразуйте позицию точки с учетом масштаба и смещения
@@ -54,8 +44,15 @@ const PolygonAnnotation = (props) => {
     ];
 
     // Обновите состояние точек с новыми координатами
-    setCurrentPoints([...currentPoints.slice(0, index), updatedPos, ...currentPoints.slice(index + 1)]);
+    const updatedPolygons = polygons.map((polygon) =>
+      polygon.map((point, pointIndex) =>
+        pointIndex === index ? updatedPos : point
+      )
+    );
+
+    setPolygons(updatedPolygons);
   };
+
 
   const handleGroupDragEnd = (e) => {
     if (e.target.name() === "polygon") {
@@ -72,17 +69,6 @@ const PolygonAnnotation = (props) => {
       setPolygons(updatedPolygons);
       e.target.position({ x: 0, y: 0 });
     }
-  };
-
-  const handleMouseOverStartPoint = (e) => {
-    if (isPolyComplete || currentPoints.length < 3) return;
-    e.target.scale({ x: 2, y: 2 });
-    setMouseOverPoint(true);
-  };
-
-  const handleMouseOutStartPoint = (e) => {
-    e.target.scale({ x: 1, y: 1 });
-    setMouseOverPoint(false);
   };
 
   const groupDragBound = (pos) => {
@@ -108,6 +94,27 @@ const PolygonAnnotation = (props) => {
     if (y + maxY > imageHeight) y = imageHeight - maxY;
 
     return { x, y };
+  };
+
+  const handleMouseOverStartPoint = (e) => {
+    if (isPolyComplete || currentPoints.length < 3) return;
+    e.target.scale({ x: 2, y: 2 });
+    setMouseOverPoint(true);
+  };
+
+  const handleMouseOutStartPoint = (e) => {
+    e.target.scale({ x: 1, y: 1 });
+    setMouseOverPoint(false);
+  };
+
+  const handleGroupMouseOver = (e) => {
+    if (!isFinished) return;
+    e.target.getStage().container().style.cursor = "move";
+    setStage(e.target.getStage());
+  };
+
+  const handleGroupMouseOut = (e) => {
+    e.target.getStage().container().style.cursor = "default";
   };
 
   return (

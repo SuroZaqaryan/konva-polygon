@@ -134,7 +134,6 @@ const AdaptiveImage = () => {
     ]);
   };
 
-
   return (
     <div>
       <button onClick={() => setScale((prevScale) => prevScale * 1.1)}>
@@ -167,6 +166,7 @@ const AdaptiveImage = () => {
               <PolygonAnnotation
                 key={index}
                 points={polygon}
+                setPolygons={setPolygons}
                 scaledPolygons={scaledPolygons[index]}
                 setCurrentPoints={setCurrentPoints}
                 setMouseOverPoint={setMouseOverPoint}
@@ -174,7 +174,6 @@ const AdaptiveImage = () => {
                 offset={offset}
                 currentPoints={currentPoints}
                 polygons={polygons}
-                setPolygons={setPolygons}
                 isFinished={true}
                 windowSize={windowSize}
                 imageSize={imageSize}
@@ -182,7 +181,6 @@ const AdaptiveImage = () => {
               />
             );
           })}
-
 
           {currentPoints.length > 0 && (
             <PolygonAnnotation
