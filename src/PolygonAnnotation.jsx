@@ -24,7 +24,6 @@ const PolygonAnnotation = (props) => {
     setPolygons,
     offset,
     currentPoints,
-    setCurrentPoints,
     windowSize,
     imageSize,
     scale,
@@ -35,6 +34,8 @@ const PolygonAnnotation = (props) => {
 
   const handlePointDragMove = (e) => {
     const index = e.target.index - 1;
+    const polygonIndex = e.target.parent.index - 1;
+
     const pos = [e.target.x(), e.target.y()];
 
     // Преобразуйте позицию точки с учетом масштаба и смещения
@@ -44,31 +45,32 @@ const PolygonAnnotation = (props) => {
     ];
 
     // Обновите состояние точек с новыми координатами
-    const updatedPolygons = polygons.map((polygon) =>
-      polygon.map((point, pointIndex) =>
-        pointIndex === index ? updatedPos : point
-      )
-    );
+    const updatedPolygons = polygons.map((polygon, idx) => {
+      if (idx === polygonIndex) {
+        return polygon.map((point, pointIndex) => {
+          return pointIndex === index ? updatedPos : point
+        })
+      }
+      return polygon
+    });
+
 
     setPolygons(updatedPolygons);
   };
 
-
   const handleGroupDragEnd = (e) => {
-    if (e.target.name() === "polygon") {
-      const xOffset = e.target.x();
-      const yOffset = e.target.y();
+    const xOffset = e.target.x();
+    const yOffset = e.target.y();
 
-      const updatedPolygons = polygons.map((polygon) =>
-        polygon.map((point) => [
-          point[0] + xOffset / scale,
-          point[1] + yOffset / scale,
-        ])
-      );
+    const updatedPolygons = polygons.map((polygon) =>
+      polygon.map((point) => [
+        point[0] + xOffset / scale,
+        point[1] + yOffset / scale,
+      ])
+    );
 
-      setPolygons(updatedPolygons);
-      e.target.position({ x: 0, y: 0 });
-    }
+    setPolygons(updatedPolygons);
+    e.target.position({ x: 0, y: 0 });
   };
 
   const groupDragBound = (pos) => {

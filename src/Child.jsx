@@ -168,7 +168,6 @@ const AdaptiveImage = () => {
                 points={polygon}
                 setPolygons={setPolygons}
                 scaledPolygons={scaledPolygons[index]}
-                setCurrentPoints={setCurrentPoints}
                 setMouseOverPoint={setMouseOverPoint}
                 isPolyComplete={isPolyComplete}
                 offset={offset}
@@ -186,7 +185,6 @@ const AdaptiveImage = () => {
             <PolygonAnnotation
               points={currentPoints}
               scaledPolygons={scaledPolygons[scaledPolygons.length - 1]}
-              setCurrentPoints={setCurrentPoints}
               setMouseOverPoint={setMouseOverPoint}
               isPolyComplete={isPolyComplete}
               offset={offset}
