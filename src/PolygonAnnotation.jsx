@@ -1,17 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { Line, Circle, Group } from "react-konva";
-
-// Функция для ограничения перемещения точек
-const dragBoundFunc = (stageWidth, stageHeight, vertexRadius, pos) => {
-  let x = pos.x;
-  let y = pos.y;
-  if (pos.x + vertexRadius > stageWidth) x = stageWidth;
-  if (pos.x - vertexRadius < 0) x = 0;
-  if (pos.y + vertexRadius > stageHeight) y = stageHeight;
-  if (pos.y - vertexRadius < 0) y = 0;
-  return { x, y };
-};
-
 
 const PolygonAnnotation = (props) => {
   const {
@@ -28,9 +16,23 @@ const PolygonAnnotation = (props) => {
     imageSize,
     scale,
   } = props;
-
   const vertexRadius = 6;
-  const [stage, setStage] = useState();
+
+  // Функция для ограничения перемещения точек
+  const dragBoundFunc = (pos) => {
+    const imageWidth = imageSize.width * scale;
+    const imageHeight = imageSize.height * scale;
+    const imageX = (windowSize.width - imageWidth) / 2 + offset.x;
+    const imageY = (windowSize.height - imageHeight) / 2 + offset.y;
+
+    let x = safeValue(pos.x);
+    let y = safeValue(pos.y);
+
+    return {
+      x: Math.max(imageX, Math.min(imageWidth + imageX - vertexRadius, x)),
+      y: Math.max(imageY, Math.min(imageHeight + imageY - vertexRadius, y)),
+    };
+  };
 
   const handlePointDragMove = (e) => {
     const index = e.target.index - 1;
@@ -53,7 +55,6 @@ const PolygonAnnotation = (props) => {
       }
       return polygon
     });
-
 
     setPolygons(updatedPolygons);
   };
@@ -119,12 +120,13 @@ const PolygonAnnotation = (props) => {
   const handleGroupMouseOver = (e) => {
     if (!isFinished) return;
     e.target.getStage().container().style.cursor = "move";
-    setStage(e.target.getStage());
   };
 
   const handleGroupMouseOut = (e) => {
     e.target.getStage().container().style.cursor = "default";
   };
+
+  const safeValue = (value) => (isNaN(value) ? 0 : value);
 
   return (
     <Group
@@ -138,24 +140,23 @@ const PolygonAnnotation = (props) => {
       <Line
         points={scaledPolygons}
         stroke="#000"
-        strokeWidth={2}
+        strokeWidth={1}
         closed
         fill="#82828273"
         lineCap="round"
         lineJoin="round"
       />
       {points.map((point, index) => {
-        const x = point[0] * scale + (windowSize.width - imageSize.width * scale) / 2;
-        const y = point[1] * scale + (windowSize.height - imageSize.height * scale) / 2;
+        const x = safeValue(point[0] * scale + (windowSize.width - imageSize.width * scale) / 2);
+        const y = safeValue(point[1] * scale + (windowSize.height - imageSize.height * scale) / 2);
 
-        const startPointAttr =
-          index === 0
-            ? {
-              hitStrokeWidth: 8,
-              onMouseOver: handleMouseOverStartPoint,
-              onMouseOut: handleMouseOutStartPoint,
-            }
-            : null;
+        const startPointAttr = index === 0
+          ? {
+            hitStrokeWidth: 8,
+            onMouseOver: handleMouseOverStartPoint,
+            onMouseOut: handleMouseOutStartPoint,
+          }
+          : null;
 
         return (
           <Circle
@@ -169,10 +170,11 @@ const PolygonAnnotation = (props) => {
             draggable
             onDragMove={handlePointDragMove}
             {...startPointAttr}
-            dragBoundFunc={(pos) => dragBoundFunc(stage.width(), stage.height(), vertexRadius, pos)}
+            dragBoundFunc={(pos) => dragBoundFunc(pos)}
           />
         );
       })}
+
     </Group>
   );
 };

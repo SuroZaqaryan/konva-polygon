@@ -111,16 +111,39 @@ const AdaptiveImage = () => {
     }
 
     const position = stageRef.current.getPointerPosition();
-
     const scaledX = (position.x - offset.x - (windowSize.width - imageSize.width * scale) / 2) / scale;
     const scaledY = (position.y - offset.y - (windowSize.height - imageSize.height * scale) / 2) / scale;
 
-    if (isMouseOverPoint && currentPoints.length >= 3) {
-      completePolygon();
-    } else {
-      setCurrentPoints([...currentPoints, [scaledX, scaledY]]);
+    // Функция проверки, находится ли точка внутри границ изображения
+    const isPointInsideImage = (x, y) => {
+      const imageWidth = imageSize.width * scale;
+      const imageHeight = imageSize.height * scale;
+      const imageX = (windowSize.width - imageWidth) / 2 + offset.x;
+      const imageY = (windowSize.height - imageHeight) / 2 + offset.y;
+
+      return (
+        x >= imageX &&
+        x <= imageX + imageWidth &&
+        y >= imageY &&
+        y <= imageY + imageHeight
+      );
+    };
+
+    // Проверяем, находится ли точка внутри границ изображения
+    const [adjustedX, adjustedY] = [
+      scaledX * scale + (windowSize.width - imageSize.width * scale) / 2 + offset.x,
+      scaledY * scale + (windowSize.height - imageSize.height * scale) / 2 + offset.y
+    ];
+
+    if (isPointInsideImage(adjustedX, adjustedY)) {
+      if (isMouseOverPoint && currentPoints.length >= 3) {
+        completePolygon();
+      } else {
+        setCurrentPoints([...currentPoints, [scaledX, scaledY]]);
+      }
     }
   };
+
 
   const handleMouseMove = (e) => {
     if (isPolyComplete || currentPoints.length === 0) return;
