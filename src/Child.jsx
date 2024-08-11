@@ -84,6 +84,37 @@ const AdaptiveImage = () => {
     };
   }, []);
 
+  useEffect(() => {
+    // Завершаем полигон, добавляя новую точку и соединяя её с первой точкой
+    const handleKeyDown = (e) => {
+      if (e.key === 'n' || e.key === 'N') {
+        if (currentPoints.length >= 1) {
+          const stage = stageRef.current;
+          const mousePos = getMousePos(stage);
+
+          const newPoint = mousePos;
+
+          const completedPolygon = [
+            ...currentPoints,
+            newPoint,
+            currentPoints[0] // Соединение с первой точкой
+          ];
+
+          setPolygons([...polygons, completedPolygon]);
+          setCurrentPoints([]);
+          setPolyComplete(true);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [currentPoints, polygons, isPolyComplete]);
+
+
   const completePolygon = () => {
     if (currentPoints.length >= 3) {
       setPolygons([...polygons, currentPoints]); // Добавляем текущий полигон в список
