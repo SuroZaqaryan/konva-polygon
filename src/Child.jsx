@@ -177,12 +177,19 @@ const AdaptiveImage = () => {
   };
 
   const calculateDistance = (point1, point2) => {
+    const scaleFactor = 1 / scale; // Учитываем текущий масштаб
+
+    // Преобразуем координаты обратно в исходные пиксели экрана
+    const x1 = (point1[0] - offset.x - (windowSize.width - imageSize.width * scale) / 2) / scaleFactor;
+    const y1 = (point1[1] - offset.y - (windowSize.height - imageSize.height * scale) / 2) / scaleFactor;
+    const x2 = (point2[0] - offset.x - (windowSize.width - imageSize.width * scale) / 2) / scaleFactor;
+    const y2 = (point2[1] - offset.y - (windowSize.height - imageSize.height * scale) / 2) / scaleFactor;
+
     return Math.sqrt(
-      (point1[0] - point2[0]) ** 2 +
-      (point1[1] - point2[1]) ** 2
+      (x2 - x1) ** 2 +
+      (y2 - y1) ** 2
     );
   };
-
 
   const handleMouseMove = (e) => {
     if (isPolyComplete || currentPoints.length === 0) return;
@@ -191,42 +198,47 @@ const AdaptiveImage = () => {
     const mousePos = getMousePos(stage);
 
     const adjustPosition = (x, y) => [
-      parseFloat(x * scale + (windowSize.width - imageSize.width * scale) / 2 + offset.x),
-      parseFloat(y * scale + (windowSize.height - imageSize.height * scale) / 2 + offset.y)
+      x * scale + (windowSize.width - imageSize.width * scale) / 2 + offset.x,
+      y * scale + (windowSize.height - imageSize.height * scale) / 2 + offset.y
     ];
 
-    const calculateDistance = (point1, point2) => Math.sqrt(
-      (point1[0] - point2[0]) ** 2 +
-      (point1[1] - point2[1]) ** 2
-    );
+    if (isShiftPressed) {
+      const lastPoint = currentPoints[currentPoints.length - 1];
+      if (lastPoint) {
+        const distance = calculateDistance(mousePos, lastPoint);
 
-    const updatePolygon = (points) => {
+        if (distance >= 25) {
+          const newPoints = [...currentPoints, mousePos];
+          setCurrentPoints(newPoints);
+
+          const tempLine = [
+            ...newPoints.flatMap(point => adjustPosition(point[0], point[1])),
+            ...adjustPosition(mousePos[0], mousePos[1])
+          ];
+
+          setScaledPolygons([
+            ...polygons.map(polygon =>
+              polygon.flatMap(point => adjustPosition(point[0], point[1]))
+            ),
+            tempLine
+          ]);
+        }
+      }
+    } else {
+      const newPoints = [...currentPoints, mousePos];
+
       const tempLine = [
-        ...points.flatMap(point => adjustPosition(point[0], point[1])),
-        ...adjustPosition(mousePos[0], mousePos[1])
+        ...newPoints.flatMap(point => adjustPosition(point[0], point[1])),
+        ...adjustPosition(mousePos[0], mousePos[1]),
+        ...adjustPosition(currentPoints[0][0], currentPoints[0][1])
       ];
-      const validTempLine = tempLine.filter(value => typeof value === 'number');
 
       setScaledPolygons([
         ...polygons.map(polygon =>
           polygon.flatMap(point => adjustPosition(point[0], point[1]))
         ),
-        validTempLine
+        tempLine
       ]);
-    };
-
-    if (isShiftPressed) {
-      const lastPoint = currentPoints[currentPoints.length - 1];
-      const distance = lastPoint ? calculateDistance(mousePos, lastPoint) : 0;
-
-      if (distance >= 25) {
-        const newPoints = [...currentPoints, mousePos];
-        setCurrentPoints(newPoints);
-        updatePolygon(newPoints);
-      }
-    } else {
-      const newPoints = [...currentPoints, mousePos];
-      updatePolygon(newPoints);
     }
   };
 
@@ -237,6 +249,12 @@ const AdaptiveImage = () => {
         Increase Scale
       </button>
       <button onClick={() => setScale((prevScale) => prevScale / 1.1)}>
+        Decrease Scale
+      </button>
+      <button onClick={() => {
+        console.log(polygons);
+
+      }}>
         Decrease Scale
       </button>
 
