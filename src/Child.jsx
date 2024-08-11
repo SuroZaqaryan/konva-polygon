@@ -17,23 +17,15 @@ const AdaptiveImage = () => {
 
   const [polygons, setPolygons] = useState([
     [
-      [
-        594,
-        378.75
-      ],
-      [
-        613.5,
-        287.25
-      ],
-      [
-        729,
-        387.75
-      ]
+      [594, 378.75],
+      [613.5, 287.25],
+      [729, 387.75]
     ]
   ]); // Состояние для нескольких полигонов
   const [currentPoints, setCurrentPoints] = useState([]); // Точки текущего полигона
   const [isMouseOverPoint, setMouseOverPoint] = useState(false);
   const [isPolyComplete, setPolyComplete] = useState(false);
+  const [isShiftPressed, setIsShiftPressed] = useState(false);
   const stageRef = useRef(null);
 
   const [image] = useImage(
@@ -71,7 +63,6 @@ const AdaptiveImage = () => {
     setScaledPolygons(newScaledPolygons);
   }, [scale, offset, polygons, windowSize, imageSize]);
 
-
   useEffect(() => {
     const handleResize = () => {
       setWindowSize({ width: window.innerWidth, height: window.innerHeight });
@@ -85,7 +76,6 @@ const AdaptiveImage = () => {
   }, []);
 
   useEffect(() => {
-    // Завершаем полигон, добавляя новую точку и соединяя её с первой точкой
     const handleKeyDown = (e) => {
       if (e.key === 'n' || e.key === 'N') {
         if (currentPoints.length >= 1) {
@@ -105,15 +95,26 @@ const AdaptiveImage = () => {
           setPolyComplete(true);
         }
       }
+
+      if (e.key === 'Shift') {
+        setIsShiftPressed(true);
+      }
+    };
+
+    const handleKeyUp = (e) => {
+      if (e.key === 'Shift') {
+        setIsShiftPressed(false);
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
 
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
     };
   }, [currentPoints, polygons, isPolyComplete]);
-
 
   const completePolygon = () => {
     if (currentPoints.length >= 3) {
@@ -175,6 +176,13 @@ const AdaptiveImage = () => {
     }
   };
 
+  const calculateDistance = (point1, point2) => {
+    return Math.sqrt(
+      (point1[0] - point2[0]) ** 2 +
+      (point1[1] - point2[1]) ** 2
+    );
+  };
+
 
   const handleMouseMove = (e) => {
     if (isPolyComplete || currentPoints.length === 0) return;
@@ -183,25 +191,45 @@ const AdaptiveImage = () => {
     const mousePos = getMousePos(stage);
 
     const adjustPosition = (x, y) => [
-      x * scale + (windowSize.width - imageSize.width * scale) / 2 + offset.x,
-      y * scale + (windowSize.height - imageSize.height * scale) / 2 + offset.y
+      parseFloat(x * scale + (windowSize.width - imageSize.width * scale) / 2 + offset.x),
+      parseFloat(y * scale + (windowSize.height - imageSize.height * scale) / 2 + offset.y)
     ];
 
-    const newPoints = [...currentPoints, mousePos];
+    const calculateDistance = (point1, point2) => Math.sqrt(
+      (point1[0] - point2[0]) ** 2 +
+      (point1[1] - point2[1]) ** 2
+    );
 
-    const tempLine = [
-      ...newPoints.flatMap(point => adjustPosition(point[0], point[1])),
-      adjustPosition(mousePos[0], mousePos[1]),
-      adjustPosition(currentPoints[0][0], currentPoints[0][1])
-    ];
+    const updatePolygon = (points) => {
+      const tempLine = [
+        ...points.flatMap(point => adjustPosition(point[0], point[1])),
+        ...adjustPosition(mousePos[0], mousePos[1])
+      ];
+      const validTempLine = tempLine.filter(value => typeof value === 'number');
 
-    const flattenTempLine = flattenArray(tempLine);
+      setScaledPolygons([
+        ...polygons.map(polygon =>
+          polygon.flatMap(point => adjustPosition(point[0], point[1]))
+        ),
+        validTempLine
+      ]);
+    };
 
-    setScaledPolygons([
-      ...polygons.map(polygon => polygon.flatMap(point => adjustPosition(point[0], point[1]))),
-      flattenTempLine
-    ]);
+    if (isShiftPressed) {
+      const lastPoint = currentPoints[currentPoints.length - 1];
+      const distance = lastPoint ? calculateDistance(mousePos, lastPoint) : 0;
+
+      if (distance >= 25) {
+        const newPoints = [...currentPoints, mousePos];
+        setCurrentPoints(newPoints);
+        updatePolygon(newPoints);
+      }
+    } else {
+      const newPoints = [...currentPoints, mousePos];
+      updatePolygon(newPoints);
+    }
   };
+
 
   return (
     <div>
@@ -235,12 +263,12 @@ const AdaptiveImage = () => {
               <PolygonAnnotation
                 key={index}
                 points={polygon}
+                currentPoints={currentPoints}
                 setPolygons={setPolygons}
                 scaledPolygons={scaledPolygons[index]}
                 setMouseOverPoint={setMouseOverPoint}
                 isPolyComplete={isPolyComplete}
                 offset={offset}
-                currentPoints={currentPoints}
                 polygons={polygons}
                 isFinished={true}
                 windowSize={windowSize}
@@ -253,11 +281,11 @@ const AdaptiveImage = () => {
           {currentPoints.length > 0 && (
             <PolygonAnnotation
               points={currentPoints}
+              currentPoints={currentPoints}
               scaledPolygons={scaledPolygons[scaledPolygons.length - 1]}
               setMouseOverPoint={setMouseOverPoint}
               isPolyComplete={isPolyComplete}
               offset={offset}
-              currentPoints={currentPoints}
               polygons={polygons}
               setPolygons={setPolygons}
               isFinished={false}
