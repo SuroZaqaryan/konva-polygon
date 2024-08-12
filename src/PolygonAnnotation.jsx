@@ -17,6 +17,7 @@ const PolygonAnnotation = (props) => {
     polygonCurrentPoints,
   } = props;
   const vertexRadius = 6;
+  const safeValue = (value) => (isNaN(value) ? 0 : value);
 
   // Функция для ограничения перемещения точек
   const dragBoundFunc = (pos) => {
@@ -40,13 +41,11 @@ const PolygonAnnotation = (props) => {
 
     const pos = [e.target.x(), e.target.y()];
 
-    // Преобразуйте позицию точки с учетом масштаба и смещения
     const updatedPos = [
       (pos[0] - (dimensions.width - imageSize.width * scale) / 2 - offset.x) / scale,
       (pos[1] - (dimensions.height - imageSize.height * scale) / 2 - offset.y) / scale
     ];
 
-    // Обновите состояние точек с новыми координатами
     const updatedPolygons = polygons.map((polygon, idx) => {
       if (idx === currentPolygonIndex) {
         return {
@@ -86,25 +85,23 @@ const PolygonAnnotation = (props) => {
     }
   };
 
+
+  // Ограничение перемещение полигона за пределами KonvaImage
   const groupDragBound = (pos) => {
     const imageWidth = imageSize.width * scale;
     const imageHeight = imageSize.height * scale;
 
-    // Calculate the current bounding box of the polygon
     const minX = Math.min(...points.map(p => p[0])) * scale + offset.x;
     const maxX = Math.max(...points.map(p => p[0])) * scale + offset.x;
     const minY = Math.min(...points.map(p => p[1])) * scale + offset.y;
     const maxY = Math.max(...points.map(p => p[1])) * scale + offset.y;
 
-    // Calculate the constraints for dragging
     let x = pos.x;
     let y = pos.y;
 
-    // Constrain x within the bounds of the image
     if (x + minX < 0) x = -minX;
     if (x + maxX > imageWidth) x = imageWidth - maxX;
 
-    // Constrain y within the bounds of the image
     if (y + minY < 0) y = -minY;
     if (y + maxY > imageHeight) y = imageHeight - maxY;
 
@@ -131,16 +128,14 @@ const PolygonAnnotation = (props) => {
     e.target.getStage().container().style.cursor = "default";
   };
 
-  const safeValue = (value) => (isNaN(value) ? 0 : value);
-
   return (
     <Group
       name="polygon"
       draggable={isFinished}
+      dragBoundFunc={groupDragBound}
       onDragEnd={handleGroupDragEnd}
       onMouseOut={handleGroupMouseOut}
       onMouseOver={handleGroupMouseOver}
-      dragBoundFunc={groupDragBound}
     >
       <Line
         points={polygonLines}

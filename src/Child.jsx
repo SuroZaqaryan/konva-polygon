@@ -14,10 +14,11 @@ const AdaptiveImage = () => {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [polygonLines, setPolygonLines] = useState([]);
 
+  // Состояние для нескольких полигонов
   const [polygons, setPolygons] = useState([
     { class: 'Car', polygons: [[594, 378.75], [613.5, 287.25], [729, 387.75]] }
   ]);
-  // Состояние для нескольких полигонов
+
   const [polygonCurrentPoints, setPolygonCurrentPoints] = useState([]); // Точки текущего полигона
   const [isMouseOverPoint, setMouseOverPoint] = useState(false);
   const [isPolygonComplete, setPolygonComplete] = useState(false);
@@ -71,6 +72,7 @@ const AdaptiveImage = () => {
   }, []);
 
   useEffect(() => {
+    // Автоматическое соединение точек при нажатии на кнопку 'N'
     const handleKeyDown = (e) => {
       if (e.key === 'n' || e.key === 'N') {
         if (polygonCurrentPoints.length >= 1) {
@@ -117,9 +119,9 @@ const AdaptiveImage = () => {
         class: 'Car', // Или другой класс, если необходимо
         polygons: polygonCurrentPoints
       };
-      setPolygons([...polygons, newPolygon]); // Добавляем новый полигон
-      setPolygonCurrentPoints([]); // Сбрасываем текущие точки
-      setPolygonComplete(false); // Разрешаем создание нового полигона
+      setPolygons([...polygons, newPolygon]); 
+      setPolygonCurrentPoints([]); 
+      setPolygonComplete(false); 
     }
   };
 
@@ -127,7 +129,7 @@ const AdaptiveImage = () => {
   const getMousePos = (stage) => {
     const position = stage.getPointerPosition();
 
-    // Рассчитайте позицию мыши относительно изображения с учетом масштаба и смещения
+    // Расчет позицию мыши относительно изображения с учетом масштаба и смещения
     const scaledX =
       (position.x - offset.x - (dimensions.width - imageSize.width * scale) / 2) / scale;
     const scaledY =
@@ -177,9 +179,8 @@ const AdaptiveImage = () => {
   };
 
   const calculateDistance = (point1, point2) => {
-    const scaleFactor = 1 / scale; // Учитываем текущий масштаб
+    const scaleFactor = 1 / scale; // Текущий масштаб
 
-    // Преобразуем координаты обратно в исходные пиксели экрана
     const x1 = (point1[0] - offset.x - (dimensions.width - imageSize.width * scale) / 2) / scaleFactor;
     const y1 = (point1[1] - offset.y - (dimensions.height - imageSize.height * scale) / 2) / scaleFactor;
     const x2 = (point2[0] - offset.x - (dimensions.width - imageSize.width * scale) / 2) / scaleFactor;
@@ -203,6 +204,7 @@ const AdaptiveImage = () => {
     ];
 
     if (isShiftPressed) {
+      // При удерживании клавиши Shift точки полигона добавляются непрерывно
       const lastPoint = polygonCurrentPoints[polygonCurrentPoints.length - 1];
       if (lastPoint) {
         const distance = calculateDistance(mousePos, lastPoint);
@@ -225,6 +227,7 @@ const AdaptiveImage = () => {
         }
       }
     } else {
+      // Установка линии полигона
       const newPoints = [...polygonCurrentPoints, mousePos];
 
       const tempLine = [
