@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Stage, Layer, Image as KonvaImage } from "react-konva";
+import React, {useEffect, useRef, useState} from "react";
+import {Image as KonvaImage, Layer, Stage} from "react-konva";
 import useImage from "use-image";
 import Polygon from "./Polygon";
 
@@ -77,9 +77,7 @@ const PolygonDraw = () => {
       if (e.key === 'n' || e.key === 'N') {
         if (polygonCurrentPoints.length >= 1) {
           const stage = stageRef.current;
-          const mousePos = getMousePos(stage);
-
-          const newPoint = mousePos;
+          const newPoint = getMousePos(stage);
 
           const completedPolygon = [
             ...polygonCurrentPoints,
@@ -116,6 +114,7 @@ const PolygonDraw = () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [polygonCurrentPoints, polygons, isPolygonComplete]);
 
   const completePolygon = () => {

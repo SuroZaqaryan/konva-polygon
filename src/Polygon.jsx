@@ -87,7 +87,6 @@ const Polygon = (props) => {
     }
   };
 
-
   // Ограничение перемещение полигона за пределами KonvaImage
   const groupDragBound = (pos) => {
     const imageWidth = imageSize.width * scale;
