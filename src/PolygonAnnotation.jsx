@@ -146,6 +146,7 @@ const PolygonAnnotation = (props) => {
         lineCap="round"
         lineJoin="round"
       />
+      
       {points.map((point, index) => {
         const x = safeValue(point[0] * scale + (dimensions.width - imageSize.width * scale) / 2);
         const y = safeValue(point[1] * scale + (dimensions.height - imageSize.height * scale) / 2);

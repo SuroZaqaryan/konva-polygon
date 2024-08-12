@@ -87,7 +87,12 @@ const AdaptiveImage = () => {
             polygonCurrentPoints[0] // Соединение с первой точкой
           ];
 
-          setPolygons([...polygons, completedPolygon]);
+          const newPolygon = {
+            class: 'Car',
+            polygons: completedPolygon
+          };
+
+          setPolygons([...polygons, newPolygon]);
           setPolygonCurrentPoints([]);
           setPolygonComplete(true);
         }
@@ -119,9 +124,9 @@ const AdaptiveImage = () => {
         class: 'Car', // Или другой класс, если необходимо
         polygons: polygonCurrentPoints
       };
-      setPolygons([...polygons, newPolygon]); 
-      setPolygonCurrentPoints([]); 
-      setPolygonComplete(false); 
+      setPolygons([...polygons, newPolygon]);
+      setPolygonCurrentPoints([]);
+      setPolygonComplete(false);
     }
   };
 
@@ -244,7 +249,6 @@ const AdaptiveImage = () => {
       ]);
     }
   };
-
 
   return (
     <div>
