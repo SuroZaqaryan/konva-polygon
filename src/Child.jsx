@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from "react";
 import { Stage, Layer, Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
 import PolygonAnnotation from "./PolygonAnnotation";
-import { flattenArray } from "./utils";
 
 const AdaptiveImage = () => {
   const [windowSize, setWindowSize] = useState({
@@ -16,12 +15,9 @@ const AdaptiveImage = () => {
   const [scaledPolygons, setScaledPolygons] = useState([]);
 
   const [polygons, setPolygons] = useState([
-    [
-      [594, 378.75],
-      [613.5, 287.25],
-      [729, 387.75]
-    ]
-  ]); // Состояние для нескольких полигонов
+    { class: 'Car', polygons: [[594, 378.75], [613.5, 287.25], [729, 387.75]] }
+  ]);
+  // Состояние для нескольких полигонов
   const [currentPoints, setCurrentPoints] = useState([]); // Точки текущего полигона
   const [isMouseOverPoint, setMouseOverPoint] = useState(false);
   const [isPolyComplete, setPolyComplete] = useState(false);
@@ -31,6 +27,9 @@ const AdaptiveImage = () => {
   const [image] = useImage(
     "https://carwow-uk-wp-3.imgix.net/18015-MC20BluInfinito-scaled-e1707920217641.jpg",
   );
+
+  console.log('currentPoints', currentPoints);
+
 
   useEffect(() => {
     if (image) {
@@ -47,13 +46,11 @@ const AdaptiveImage = () => {
   }, [image, windowSize]);
 
   useEffect(() => {
-    // Обновляем масштабированные полигоны
-    const newScaledPolygons = polygons.map((points) =>
-      points.map((point) => [
+    const newScaledPolygons = polygons.map(({ polygons }) =>
+      polygons.map((point) => [
         point[0] * scale +
         (windowSize.width - imageSize.width * scale) / 2 +
         offset.x,
-
         point[1] * scale +
         (windowSize.height - imageSize.height * scale) / 2 +
         offset.y,
@@ -62,6 +59,7 @@ const AdaptiveImage = () => {
 
     setScaledPolygons(newScaledPolygons);
   }, [scale, offset, polygons, windowSize, imageSize]);
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -118,11 +116,16 @@ const AdaptiveImage = () => {
 
   const completePolygon = () => {
     if (currentPoints.length >= 3) {
-      setPolygons([...polygons, currentPoints]); // Добавляем текущий полигон в список
+      const newPolygon = {
+        class: 'Car', // Или другой класс, если необходимо
+        polygons: currentPoints
+      };
+      setPolygons([...polygons, newPolygon]); // Добавляем новый полигон
       setCurrentPoints([]); // Сбрасываем текущие точки
       setPolyComplete(false); // Разрешаем создание нового полигона
     }
   };
+
 
   const getMousePos = (stage) => {
     const position = stage.getPointerPosition();
@@ -218,7 +221,7 @@ const AdaptiveImage = () => {
 
           setScaledPolygons([
             ...polygons.map(polygon =>
-              polygon.flatMap(point => adjustPosition(point[0], point[1]))
+              polygon.polygons.flatMap(point => adjustPosition(point[0], point[1]))
             ),
             tempLine
           ]);
@@ -235,7 +238,7 @@ const AdaptiveImage = () => {
 
       setScaledPolygons([
         ...polygons.map(polygon =>
-          polygon.flatMap(point => adjustPosition(point[0], point[1]))
+          polygon.polygons.flatMap(point => adjustPosition(point[0], point[1]))
         ),
         tempLine
       ]);
@@ -276,7 +279,7 @@ const AdaptiveImage = () => {
             />
           )}
 
-          {polygons.map((polygon, index) => {
+          {polygons.map(({ polygons: polygon }, index) => {
             return (
               <PolygonAnnotation
                 key={index}
@@ -312,6 +315,7 @@ const AdaptiveImage = () => {
               scale={scale}
             />
           )}
+
 
         </Layer>
       </Stage>

@@ -49,11 +49,14 @@ const PolygonAnnotation = (props) => {
     // Обновите состояние точек с новыми координатами
     const updatedPolygons = polygons.map((polygon, idx) => {
       if (idx === currentPolygonIndex) {
-        return polygon.map((point, pointIndex) => {
-          return pointIndex === index ? updatedPos : point
-        })
+        return {
+          ...polygon,
+          polygons: polygon.polygons.map((point, pointIndex) => {
+            return pointIndex === index ? updatedPos : point;
+          })
+        };
       }
-      return polygon
+      return polygon;
     });
 
     setPolygons(updatedPolygons);
@@ -67,10 +70,13 @@ const PolygonAnnotation = (props) => {
 
       const updatedPolygons = polygons.map((polygon, idx) => {
         if (idx === currentPolygonIndex) {
-          return polygon.map((point) => [
-            point[0] + xOffset / scale,
-            point[1] + yOffset / scale,
-          ]);
+          return {
+            ...polygon,
+            polygons: polygon.polygons.map((point) => [
+              point[0] + xOffset / scale,
+              point[1] + yOffset / scale,
+            ])
+          };
         }
         return polygon;
       });
@@ -79,7 +85,6 @@ const PolygonAnnotation = (props) => {
       e.target.position({ x: 0, y: 0 });
     }
   };
-
 
   const groupDragBound = (pos) => {
     const imageWidth = imageSize.width * scale;
@@ -174,7 +179,6 @@ const PolygonAnnotation = (props) => {
           />
         );
       })}
-
     </Group>
   );
 };
