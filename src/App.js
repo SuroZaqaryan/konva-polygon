@@ -1,12 +1,7 @@
-import './App.css';
-import Child from './Child';
+import PolygonDraw from './PolygonDraw';
 
 function App() {
-  return (
-    <div className="App">
-      <Child />
-    </div>
-  );
+  return <PolygonDraw />
 }
 
 export default App;

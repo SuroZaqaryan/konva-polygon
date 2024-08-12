@@ -1,9 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Stage, Layer, Image as KonvaImage } from "react-konva";
 import useImage from "use-image";
-import PolygonAnnotation from "./PolygonAnnotation";
+import Polygon from "./Polygon";
 
-const AdaptiveImage = () => {
+const PolygonDraw = () => {
   const [dimensions, setDimensions] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -11,7 +11,7 @@ const AdaptiveImage = () => {
 
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [scale, setScale] = useState(1);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
+  const [offset] = useState({ x: 0, y: 0 });
   const [polygonLines, setPolygonLines] = useState([]);
 
   // Состояние для нескольких полигонов
@@ -121,7 +121,7 @@ const AdaptiveImage = () => {
   const completePolygon = () => {
     if (polygonCurrentPoints.length >= 3) {
       const newPolygon = {
-        class: 'Car', // Или другой класс, если необходимо
+        class: 'Car',
         polygons: polygonCurrentPoints
       };
       setPolygons([...polygons, newPolygon]);
@@ -144,12 +144,16 @@ const AdaptiveImage = () => {
   };
 
   const handleMouseDown = (e) => {
+    // Проверка, что нажата левая кнопка мыши
+    if (e.evt.button !== 0) return;
+
     if (isPolygonComplete || e.target.parent?.attrs.draggable) {
       setPolygonComplete(false);
       return;
     }
 
     const position = stageRef.current.getPointerPosition();
+
     const scaledX = (position.x - offset.x - (dimensions.width - imageSize.width * scale) / 2) / scale;
     const scaledY = (position.y - offset.y - (dimensions.height - imageSize.height * scale) / 2) / scale;
 
@@ -285,7 +289,7 @@ const AdaptiveImage = () => {
 
           {polygons.map(({ polygons: polygon }, index) => {
             return (
-              <PolygonAnnotation
+              <Polygon
                 key={index}
                 isFinished={true}
                 points={polygon}
@@ -304,7 +308,7 @@ const AdaptiveImage = () => {
           })}
 
           {polygonCurrentPoints.length > 0 && (
-            <PolygonAnnotation
+            <Polygon
               isFinished={false}
               scale={scale}
               offset={offset}
@@ -319,12 +323,10 @@ const AdaptiveImage = () => {
               setMouseOverPoint={setMouseOverPoint}
             />
           )}
-
-
         </Layer>
       </Stage>
     </div>
   );
 };
 
-export default AdaptiveImage;
+export default PolygonDraw;

@@ -1,7 +1,7 @@
 import React from "react";
 import { Line, Circle, Group } from "react-konva";
 
-const PolygonAnnotation = (props) => {
+const Polygon = (props) => {
   const {
     scale,
     offset,
@@ -142,7 +142,7 @@ const PolygonAnnotation = (props) => {
         stroke="#000"
         strokeWidth={1}
         closed
-        fill="#82828273"
+        fill="#9f9f9f73"
         lineCap="round"
         lineJoin="round"
       />
@@ -179,4 +179,4 @@ const PolygonAnnotation = (props) => {
   );
 };
 
-export default PolygonAnnotation;
+export default Polygon;
