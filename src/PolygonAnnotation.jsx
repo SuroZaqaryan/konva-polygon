@@ -3,18 +3,18 @@ import { Line, Circle, Group } from "react-konva";
 
 const PolygonAnnotation = (props) => {
   const {
-    points,
-    isFinished,
-    scaledPolygons,
-    polygons,
-    setMouseOverPoint,
-    isPolyComplete,
-    setPolygons,
-    offset,
-    currentPoints,
-    windowSize,
-    imageSize,
     scale,
+    offset,
+    points,
+    polygons,
+    imageSize,
+    isFinished,
+    dimensions,
+    setPolygons,
+    polygonLines,
+    setMouseOverPoint,
+    isPolygonComplete,
+    polygonCurrentPoints,
   } = props;
   const vertexRadius = 6;
 
@@ -22,8 +22,8 @@ const PolygonAnnotation = (props) => {
   const dragBoundFunc = (pos) => {
     const imageWidth = imageSize.width * scale;
     const imageHeight = imageSize.height * scale;
-    const imageX = (windowSize.width - imageWidth) / 2 + offset.x;
-    const imageY = (windowSize.height - imageHeight) / 2 + offset.y;
+    const imageX = (dimensions.width - imageWidth) / 2 + offset.x;
+    const imageY = (dimensions.height - imageHeight) / 2 + offset.y;
 
     let x = safeValue(pos.x);
     let y = safeValue(pos.y);
@@ -42,8 +42,8 @@ const PolygonAnnotation = (props) => {
 
     // Преобразуйте позицию точки с учетом масштаба и смещения
     const updatedPos = [
-      (pos[0] - (windowSize.width - imageSize.width * scale) / 2 - offset.x) / scale,
-      (pos[1] - (windowSize.height - imageSize.height * scale) / 2 - offset.y) / scale
+      (pos[0] - (dimensions.width - imageSize.width * scale) / 2 - offset.x) / scale,
+      (pos[1] - (dimensions.height - imageSize.height * scale) / 2 - offset.y) / scale
     ];
 
     // Обновите состояние точек с новыми координатами
@@ -112,7 +112,7 @@ const PolygonAnnotation = (props) => {
   };
 
   const handleMouseOverStartPoint = (e) => {
-    if (isPolyComplete || currentPoints.length < 3) return;
+    if (isPolygonComplete || polygonCurrentPoints.length < 3) return;
     e.target.scale({ x: 2, y: 2 });
     setMouseOverPoint(true);
   };
@@ -143,7 +143,7 @@ const PolygonAnnotation = (props) => {
       dragBoundFunc={groupDragBound}
     >
       <Line
-        points={scaledPolygons}
+        points={polygonLines}
         stroke="#000"
         strokeWidth={1}
         closed
@@ -152,8 +152,8 @@ const PolygonAnnotation = (props) => {
         lineJoin="round"
       />
       {points.map((point, index) => {
-        const x = safeValue(point[0] * scale + (windowSize.width - imageSize.width * scale) / 2);
-        const y = safeValue(point[1] * scale + (windowSize.height - imageSize.height * scale) / 2);
+        const x = safeValue(point[0] * scale + (dimensions.width - imageSize.width * scale) / 2);
+        const y = safeValue(point[1] * scale + (dimensions.height - imageSize.height * scale) / 2);
 
         const startPointAttr = index === 0
           ? {
