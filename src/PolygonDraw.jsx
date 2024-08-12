@@ -130,7 +130,6 @@ const PolygonDraw = () => {
     }
   };
 
-
   const getMousePos = (stage) => {
     const position = stage.getPointerPosition();
 
@@ -298,7 +297,7 @@ const PolygonDraw = () => {
                 polygons={polygons}
                 imageSize={imageSize}
                 dimensions={dimensions}
-                polygonLines={polygonLines[index]}
+                polygonLines={polygonLines[index] || []}
                 isPolygonComplete={isPolygonComplete}
                 polygonCurrentPoints={polygonCurrentPoints}
                 setPolygons={setPolygons}
@@ -318,7 +317,7 @@ const PolygonDraw = () => {
               points={polygonCurrentPoints}
               isPolygonComplete={isPolygonComplete}
               polygonCurrentPoints={polygonCurrentPoints}
-              polygonLines={polygonLines[polygonLines.length - 1]}
+              polygonLines={polygonLines[polygonLines.length - 1] || []}
               setPolygons={setPolygons}
               setMouseOverPoint={setMouseOverPoint}
             />

@@ -1,4 +1,5 @@
 import React from "react";
+import PropTypes from "prop-types";
 import { Line, Circle, Group } from "react-konva";
 
 const Polygon = (props) => {
@@ -16,6 +17,7 @@ const Polygon = (props) => {
     isPolygonComplete,
     polygonCurrentPoints,
   } = props;
+  
   const vertexRadius = 6;
   const safeValue = (value) => (isNaN(value) ? 0 : value);
 
@@ -177,6 +179,33 @@ const Polygon = (props) => {
       })}
     </Group>
   );
+};
+
+Polygon.propTypes = {
+  scale: PropTypes.number.isRequired,
+  offset: PropTypes.shape({
+    x: PropTypes.number.isRequired,
+    y: PropTypes.number.isRequired,
+  }).isRequired,
+  points: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)).isRequired,
+  polygons: PropTypes.arrayOf(PropTypes.shape({
+    class: PropTypes.string.isRequired,
+    polygons: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)).isRequired,
+  })).isRequired,
+  imageSize: PropTypes.shape({
+    width: PropTypes.number.isRequired,
+    height: PropTypes.number.isRequired,
+  }).isRequired,
+  isFinished: PropTypes.bool.isRequired,
+  dimensions: PropTypes.shape({
+    width: PropTypes.number.isRequired,
+    height: PropTypes.number.isRequired,
+  }).isRequired,
+  setPolygons: PropTypes.func.isRequired,
+  polygonLines: PropTypes.arrayOf(PropTypes.number).isRequired,
+  setMouseOverPoint: PropTypes.func.isRequired,
+  isPolygonComplete: PropTypes.bool.isRequired,
+  polygonCurrentPoints: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)).isRequired,
 };
 
 export default Polygon;
