@@ -258,7 +258,7 @@ const AdaptiveImage = () => {
         console.log(polygons);
 
       }}>
-        Decrease Scale
+        Show console
       </button>
 
       <Stage
