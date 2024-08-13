@@ -52,7 +52,7 @@ const Polygon = (props) => {
       if (idx === currentPolygonIndex) {
         return {
           ...polygon,
-          polygons: polygon.polygons.map((point, pointIndex) => {
+          points: polygon.points.map((point, pointIndex) => {
             return pointIndex === index ? updatedPos : point;
           })
         };
@@ -73,7 +73,7 @@ const Polygon = (props) => {
         if (idx === currentPolygonIndex) {
           return {
             ...polygon,
-            polygons: polygon.polygons.map((point) => [
+            points: polygon.points.map((point) => [
               point[0] + xOffset / scale,
               point[1] + yOffset / scale,
             ])
@@ -147,7 +147,7 @@ const Polygon = (props) => {
         lineCap="round"
         lineJoin="round"
       />
-      
+
       {points.map((point, index) => {
         const x = safeValue(point[0] * scale + (dimensions.width - imageSize.width * scale) / 2);
         const y = safeValue(point[1] * scale + (dimensions.height - imageSize.height * scale) / 2);
@@ -189,7 +189,7 @@ Polygon.propTypes = {
   points: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)).isRequired,
   polygons: PropTypes.arrayOf(PropTypes.shape({
     class: PropTypes.string.isRequired,
-    polygons: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)).isRequired,
+    points: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)).isRequired,
   })).isRequired,
   imageSize: PropTypes.shape({
     width: PropTypes.number.isRequired,
@@ -206,5 +206,4 @@ Polygon.propTypes = {
   isPolygonComplete: PropTypes.bool.isRequired,
   polygonCurrentPoints: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)).isRequired,
 };
-
 export default Polygon;

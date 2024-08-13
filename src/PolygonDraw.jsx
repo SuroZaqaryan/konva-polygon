@@ -16,8 +16,9 @@ const PolygonDraw = () => {
 
   // Состояние для нескольких полигонов
   const [polygons, setPolygons] = useState([
-    { class: 'Car', polygons: [[594, 378.75], [613.5, 287.25], [729, 387.75]] }
+    { class: 'Car', points: [[594, 378.75], [613.5, 287.25], [729, 387.75]] }
   ]);
+
 
   const [polygonCurrentPoints, setPolygonCurrentPoints] = useState([]); // Точки текущего полигона
   const [isMouseOverPoint, setMouseOverPoint] = useState(false);
@@ -44,8 +45,8 @@ const PolygonDraw = () => {
   }, [image, dimensions]);
 
   useEffect(() => {
-    const newScaledPolygons = polygons.map(({ polygons }) =>
-      polygons.map((point) => [
+    const newScaledPolygons = polygons.map(({ points }) =>
+      points.map((point) => [
         point[0] * scale +
         (dimensions.width - imageSize.width * scale) / 2 +
         offset.x,
@@ -87,7 +88,7 @@ const PolygonDraw = () => {
 
           const newPolygon = {
             class: 'Car',
-            polygons: completedPolygon
+            points: completedPolygon
           };
 
           setPolygons([...polygons, newPolygon]);
@@ -121,7 +122,7 @@ const PolygonDraw = () => {
     if (polygonCurrentPoints.length >= 3) {
       const newPolygon = {
         class: 'Car',
-        polygons: polygonCurrentPoints
+        points: polygonCurrentPoints
       };
       setPolygons([...polygons, newPolygon]);
       setPolygonCurrentPoints([]);
@@ -169,7 +170,6 @@ const PolygonDraw = () => {
         y <= imageY + imageHeight
       );
     };
-
     // Проверяем, находится ли точка внутри границ изображения
     const [adjustedX, adjustedY] = [
       scaledX * scale + (dimensions.width - imageSize.width * scale) / 2 + offset.x,
@@ -227,7 +227,7 @@ const PolygonDraw = () => {
 
           setPolygonLines([
             ...polygons.map(polygon =>
-              polygon.polygons.flatMap(point => adjustPosition(point[0], point[1]))
+              polygon.points.flatMap(point => adjustPosition(point[0], point[1]))
             ),
             tempLine
           ]);
@@ -245,7 +245,7 @@ const PolygonDraw = () => {
 
       setPolygonLines([
         ...polygons.map(polygon =>
-          polygon.polygons.flatMap(point => adjustPosition(point[0], point[1]))
+          polygon.points.flatMap(point => adjustPosition(point[0], point[1]))
         ),
         tempLine
       ]);
@@ -260,10 +260,7 @@ const PolygonDraw = () => {
       <button onClick={() => setScale((prevScale) => prevScale / 1.1)}>
         Decrease Scale
       </button>
-      <button onClick={() => {
-        console.log(polygons);
-
-      }}>
+      <button onClick={() => console.log(polygons)}>
         Show console
       </button>
 
@@ -285,7 +282,7 @@ const PolygonDraw = () => {
             />
           )}
 
-          {polygons.map(({ polygons: polygon }, index) => {
+          {polygons.map(({ points: polygon }, index) => {
             return (
               <Polygon
                 key={index}
