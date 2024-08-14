@@ -1,7 +1,10 @@
-import React, {useEffect, useRef, useState} from "react";
-import {Image as KonvaImage, Layer, Stage} from "react-konva";
+import React, { useEffect, useRef, useState } from "react";
+import { Image as KonvaImage, Layer, Stage } from "react-konva";
 import useImage from "use-image";
 import Polygon from "./Polygon";
+
+const maxZoom = 5; // Ограничение увеличения масштаба
+const minZoom = 0.3; // Ограничение уменьшения масштаба
 
 const PolygonDraw = () => {
   const [dimensions, setDimensions] = useState({
@@ -11,7 +14,7 @@ const PolygonDraw = () => {
 
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
   const [scale, setScale] = useState(1);
-  const [offset] = useState({ x: 0, y: 0 });
+  const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [polygonLines, setPolygonLines] = useState([]);
 
   // Состояние для нескольких полигонов
@@ -252,6 +255,36 @@ const PolygonDraw = () => {
     }
   };
 
+  const handleWheel = (e) => {
+    e.evt.preventDefault();
+
+    const scaleBy = 1.1;
+    const stage = stageRef.current;
+    const oldScale = scale;
+    const pointerPosition = stage.getPointerPosition();
+
+    const imagePosition = {
+      x: (dimensions.width - imageSize.width * oldScale) / 2 + offset.x,
+      y: (dimensions.height - imageSize.height * oldScale) / 2 + offset.y,
+    };
+
+    const pointerRelativeToImage = {
+      x: (pointerPosition.x - imagePosition.x) / oldScale,
+      y: (pointerPosition.y - imagePosition.y) / oldScale,
+    };
+
+    const newScale = e.evt.deltaY > 0 ? oldScale * scaleBy : oldScale / scaleBy;
+
+    if (newScale <= maxZoom && newScale >= minZoom) {
+      setScale(newScale);
+
+      setOffset({
+        x: pointerPosition.x - pointerRelativeToImage.x * newScale - (dimensions.width - imageSize.width * newScale) / 2,
+        y: pointerPosition.y - pointerRelativeToImage.y * newScale - (dimensions.height - imageSize.height * newScale) / 2,
+      });
+    }
+  };
+
   return (
     <div>
       <button onClick={() => setScale((prevScale) => prevScale * 1.1)}>
@@ -266,6 +299,7 @@ const PolygonDraw = () => {
 
       <Stage
         ref={stageRef}
+        onWheel={handleWheel}
         width={dimensions.width}
         height={dimensions.height}
         onMouseMove={handleMouseMove}

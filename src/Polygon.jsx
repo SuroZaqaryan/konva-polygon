@@ -92,22 +92,43 @@ const Polygon = (props) => {
     const imageWidth = imageSize.width * scale;
     const imageHeight = imageSize.height * scale;
 
-    const minX = Math.min(...points.map(p => p[0])) * scale + offset.x;
-    const maxX = Math.max(...points.map(p => p[0])) * scale + offset.x;
-    const minY = Math.min(...points.map(p => p[1])) * scale + offset.y;
-    const maxY = Math.max(...points.map(p => p[1])) * scale + offset.y;
+    // Позиция изображения на экране
+    const imageX = (dimensions.width - imageWidth) / 2 + offset.x;
+    const imageY = (dimensions.height - imageHeight) / 2 + offset.y;
 
+    // Определение границ изображения
+    const minImageX = imageX;
+    const maxImageX = imageX + imageWidth;
+    const minImageY = imageY;
+    const maxImageY = imageY + imageHeight;
+
+    // Определение текущих границ полигона
+    const minPolygonX = Math.min(...points.map(p => p[0])) * scale + imageX;
+    const maxPolygonX = Math.max(...points.map(p => p[0])) * scale + imageX;
+    const minPolygonY = Math.min(...points.map(p => p[1])) * scale + imageY;
+    const maxPolygonY = Math.max(...points.map(p => p[1])) * scale + imageY;
+
+    // Корректировка позиции для ограничения перемещения
     let x = pos.x;
     let y = pos.y;
 
-    if (x + minX < 0) x = -minX;
-    if (x + maxX > imageWidth) x = imageWidth - maxX;
+    if (x + minPolygonX < minImageX) {
+      x = minImageX - minPolygonX;
+    }
+    if (x + maxPolygonX > maxImageX) {
+      x = maxImageX - maxPolygonX;
+    }
 
-    if (y + minY < 0) y = -minY;
-    if (y + maxY > imageHeight) y = imageHeight - maxY;
+    if (y + minPolygonY < minImageY) {
+      y = minImageY - minPolygonY;
+    }
+    if (y + maxPolygonY > maxImageY) {
+      y = maxImageY - maxPolygonY;
+    }
 
     return { x, y };
   };
+
 
   const handleMouseOverStartPoint = (e) => {
     if (isPolygonComplete || polygonCurrentPoints.length < 3) return;
@@ -149,8 +170,9 @@ const Polygon = (props) => {
       />
 
       {points.map((point, index) => {
-        const x = safeValue(point[0] * scale + (dimensions.width - imageSize.width * scale) / 2);
-        const y = safeValue(point[1] * scale + (dimensions.height - imageSize.height * scale) / 2);
+        const x = safeValue(point[0] * scale + (dimensions.width - imageSize.width * scale) / 2 + offset.x);
+        const y = safeValue(point[1] * scale + (dimensions.height - imageSize.height * scale) / 2 + offset.y);
+
 
         const startPointAttr = index === 0
           ? {
