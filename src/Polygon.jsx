@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import PropTypes from "prop-types";
 import { Line, Circle, Group } from "react-konva";
 
@@ -9,24 +9,53 @@ const Polygon = (props) => {
     points,
     polygons,
     imageSize,
-    isFinished,
-    dimensions,
+    windowSize,
     setPolygons,
     polygonLines,
     setMouseOverPoint,
     isPolygonComplete,
-    polygonCurrentPoints,
   } = props;
-  
+
   const vertexRadius = 6;
   const safeValue = (value) => (isNaN(value) ? 0 : value);
+
+  const updatedLines = (updatedPoints = points) => {
+    return updatedPoints.map(point => [
+      point[0] * scale +
+      (windowSize.width - imageSize.width * scale) / 2 +
+      offset.x,
+      point[1] * scale +
+      (windowSize.height - imageSize.height * scale) / 2 +
+      offset.y,
+    ]).flat();
+  };
+
+  useEffect(() => {
+    const newPolygons = polygons.map((polygon) => {
+      const newPoints = polygon.points.map((point) => [
+        point[0] * scale +
+        (windowSize.width - imageSize.width * scale) / 2 +
+        offset.x,
+        point[1] * scale +
+        (windowSize.height - imageSize.height * scale) / 2 +
+        offset.y,
+      ]);
+
+      return {
+        ...polygon,
+        lines: newPoints.flat(),
+      };
+    });
+
+    setPolygons(newPolygons);
+  }, [scale, offset, windowSize, imageSize, isPolygonComplete]);
 
   // Функция для ограничения перемещения точек
   const dragBoundFunc = (pos) => {
     const imageWidth = imageSize.width * scale;
     const imageHeight = imageSize.height * scale;
-    const imageX = (dimensions.width - imageWidth) / 2 + offset.x;
-    const imageY = (dimensions.height - imageHeight) / 2 + offset.y;
+    const imageX = (windowSize.width - imageWidth) / 2 + offset.x;
+    const imageY = (windowSize.height - imageHeight) / 2 + offset.y;
 
     let x = safeValue(pos.x);
     let y = safeValue(pos.y);
@@ -44,17 +73,20 @@ const Polygon = (props) => {
     const pos = [e.target.x(), e.target.y()];
 
     const updatedPos = [
-      (pos[0] - (dimensions.width - imageSize.width * scale) / 2 - offset.x) / scale,
-      (pos[1] - (dimensions.height - imageSize.height * scale) / 2 - offset.y) / scale
+      (pos[0] - (windowSize.width - imageSize.width * scale) / 2 - offset.x) / scale,
+      (pos[1] - (windowSize.height - imageSize.height * scale) / 2 - offset.y) / scale
     ];
 
     const updatedPolygons = polygons.map((polygon, idx) => {
       if (idx === currentPolygonIndex) {
+        const updatedPoints = polygon.points.map((point, pointIndex) => {
+          return pointIndex === index ? updatedPos : point;
+        })
+
         return {
           ...polygon,
-          points: polygon.points.map((point, pointIndex) => {
-            return pointIndex === index ? updatedPos : point;
-          })
+          points: updatedPoints,
+          lines: updatedLines(updatedPoints),
         };
       }
       return polygon;
@@ -71,12 +103,15 @@ const Polygon = (props) => {
 
       const updatedPolygons = polygons.map((polygon, idx) => {
         if (idx === currentPolygonIndex) {
+          const updatedPoints = polygon.points.map(point => [
+            point[0] + xOffset / scale,
+            point[1] + yOffset / scale,
+          ]);
+
           return {
             ...polygon,
-            points: polygon.points.map((point) => [
-              point[0] + xOffset / scale,
-              point[1] + yOffset / scale,
-            ])
+            points: updatedPoints,
+            lines: updatedLines(updatedPoints),
           };
         }
         return polygon;
@@ -93,8 +128,8 @@ const Polygon = (props) => {
     const imageHeight = imageSize.height * scale;
 
     // Позиция изображения на экране
-    const imageX = (dimensions.width - imageWidth) / 2 + offset.x;
-    const imageY = (dimensions.height - imageHeight) / 2 + offset.y;
+    const imageX = (windowSize.width - imageWidth) / 2 + offset.x;
+    const imageY = (windowSize.height - imageHeight) / 2 + offset.y;
 
     // Определение границ изображения
     const minImageX = imageX;
@@ -131,7 +166,7 @@ const Polygon = (props) => {
 
 
   const handleMouseOverStartPoint = (e) => {
-    if (isPolygonComplete || polygonCurrentPoints.length < 3) return;
+    if (!isPolygonComplete || points.length < 3) return;
     e.target.scale({ x: 2, y: 2 });
     setMouseOverPoint(true);
   };
@@ -142,7 +177,7 @@ const Polygon = (props) => {
   };
 
   const handleGroupMouseOver = (e) => {
-    if (!isFinished) return;
+    if (!isPolygonComplete) return;
     e.target.getStage().container().style.cursor = "move";
   };
 
@@ -153,13 +188,14 @@ const Polygon = (props) => {
   return (
     <Group
       name="polygon"
-      draggable={isFinished}
+      draggable={!isPolygonComplete}
       dragBoundFunc={groupDragBound}
       onDragEnd={handleGroupDragEnd}
       onMouseOut={handleGroupMouseOut}
       onMouseOver={handleGroupMouseOver}
     >
       <Line
+        name='line'
         points={polygonLines}
         stroke="#000"
         strokeWidth={1}
@@ -170,8 +206,8 @@ const Polygon = (props) => {
       />
 
       {points.map((point, index) => {
-        const x = safeValue(point[0] * scale + (dimensions.width - imageSize.width * scale) / 2 + offset.x);
-        const y = safeValue(point[1] * scale + (dimensions.height - imageSize.height * scale) / 2 + offset.y);
+        const x = safeValue(point[0] * scale + (windowSize.width - imageSize.width * scale) / 2 + offset.x);
+        const y = safeValue(point[1] * scale + (windowSize.height - imageSize.height * scale) / 2 + offset.y);
 
 
         const startPointAttr = index === 0
@@ -184,6 +220,7 @@ const Polygon = (props) => {
 
         return (
           <Circle
+            name='circle'
             key={index}
             x={x}
             y={y}
@@ -210,15 +247,14 @@ Polygon.propTypes = {
   }).isRequired,
   points: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)).isRequired,
   polygons: PropTypes.arrayOf(PropTypes.shape({
-    class: PropTypes.string.isRequired,
+    class: PropTypes.string,
     points: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)).isRequired,
   })).isRequired,
   imageSize: PropTypes.shape({
     width: PropTypes.number.isRequired,
     height: PropTypes.number.isRequired,
   }).isRequired,
-  isFinished: PropTypes.bool.isRequired,
-  dimensions: PropTypes.shape({
+  windowSize: PropTypes.shape({
     width: PropTypes.number.isRequired,
     height: PropTypes.number.isRequired,
   }).isRequired,
@@ -226,6 +262,6 @@ Polygon.propTypes = {
   polygonLines: PropTypes.arrayOf(PropTypes.number).isRequired,
   setMouseOverPoint: PropTypes.func.isRequired,
   isPolygonComplete: PropTypes.bool.isRequired,
-  polygonCurrentPoints: PropTypes.arrayOf(PropTypes.arrayOf(PropTypes.number)).isRequired,
 };
+
 export default Polygon;
