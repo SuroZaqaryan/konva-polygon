@@ -16,7 +16,9 @@ const PolygonDraw = () => {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [imageSize, setImageSize] = useState({ width: 0, height: 0 });
 
-  const [polygons, setPolygons] = useState([]);
+  const [polygons, setPolygons] = useState([
+    { class: 'Car', points: [[594, 378.75], [613.5, 287.25], [729, 387.75]], lines: [] }
+  ]);
   const [isShiftPressed, setIsShiftPressed] = useState(false);
   const [isMouseOverPoint, setMouseOverPoint] = useState(false);
   const [isPolygonComplete, setPolygonComplete] = useState(false);
