@@ -102,12 +102,6 @@ const PolygonDraw = () => {
     };
   }, [polygons, isPolygonComplete]);
 
-
-  useEffect(() => {
-    console.log('isPolygonComplete', isPolygonComplete);
-  }, [isPolygonComplete])
-
-
   const getMousePos = (stage) => {
     const position = stage.getPointerPosition();
 
