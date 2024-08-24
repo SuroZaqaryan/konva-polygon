@@ -71,9 +71,12 @@ const PolygonDraw = () => {
             points: completedPolygon
           };
 
-          setPolygons([...polygons, newPolygon]);
-          setPolygons([]);
-          // setPolygonComplete(true);
+          setPolygons(prev => [
+            ...prev.slice(0, -1), // Убираем последний незавершенный полигон
+            newPolygon
+          ]);
+          
+          setPolygonComplete(false); // Завершаем текущий полигон
         }
       }
 
@@ -96,6 +99,7 @@ const PolygonDraw = () => {
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, [polygons, isPolygonComplete]);
+
 
   useEffect(() => {
     console.log('isPolygonComplete', isPolygonComplete);
